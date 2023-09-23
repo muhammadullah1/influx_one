@@ -1,6 +1,6 @@
 // routes/dataRoutes.js
 const express = require('express');
-const dataController = require('../controllers/dataController');
+const dataController = require('../controllers/dataControllers');
 
 const router = express.Router();
 
