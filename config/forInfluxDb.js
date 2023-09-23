@@ -2,7 +2,7 @@ require('dotenv').config(); // Load environment variables from .env file
 
 module.exports = {
   // InfluxDB configuration
-  influxDB: {
+  influxDBCon: {
     url: process.env.INFLUX_URL,
     token: process.env.INFLUX_TOKEN,
     org: process.env.INFLUX_ORG,
@@ -11,3 +11,4 @@ module.exports = {
 
   // Other configuration options, if needed
 };
+

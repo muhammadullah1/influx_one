@@ -1,11 +1,9 @@
-// controllers/dataController.js
 const dataService = require('../services/dataService');
 
-// Define your controller functions here
 const createData = async (req, res) => {
   try {
-    const data = req.body; // Get data from the request
-    const result = await dataService.createData(data); // Call the service function
+    const data = req.body;
+    const result = await dataService.createData(data);
     res.status(201).json(result);
   } catch (error) {
     console.error('Error creating data:', error);
@@ -13,6 +11,17 @@ const createData = async (req, res) => {
   }
 };
 
+const getData = async (req, res) => {
+  try {
+    const data = await dataService.getData();
+    res.status(200).json(data);
+  } catch (error) {
+    console.error('Error retrieving data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   createData,
+  getData,
 };

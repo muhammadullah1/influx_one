@@ -1,4 +1,3 @@
-// index.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const dataRoutes = require('./routes/dataRoutes');

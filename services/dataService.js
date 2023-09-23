@@ -1,12 +1,20 @@
-// services/dataService.js
 const dataModel = require('../models/dataModels');
 
-// Define your service functions here
 const createData = async (data) => {
   dataModel.saveData(data);
   return { message: 'Data saved successfully' };
 };
+const getData = async () => {
+  try {
+    const data = await dataModel.getData();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 
 module.exports = {
   createData,
+  getData,
 };
