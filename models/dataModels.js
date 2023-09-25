@@ -1,76 +1,73 @@
 const {InfluxDB, Point} = require('@influxdata/influxdb-client');
+const {hostname} = require('node:os');
+const { OrgsAPI, BucketsAPI } = require('@influxdata/influxdb-client-apis');
 const {
   influxDBCon: {url, token, org, bucket},
 } = require('../config/forInfluxDb');
 
 const influxDB = new InfluxDB({url, token});
 const writeApi = influxDB.getWriteApi(org, bucket);
+writeApi.useDefaultTags({location: hostname()});
 
-const saveData = (data) => {
-  const point = new Point('video_metrics')
-    .tag('source', data.source)
-    .tag('requiressl', data.requiressl)
-    .tag('mime', data.mime)
-    .tag('c', data.c)
-    .intField('expire', data.expire)
-    .stringField('ei', data.ei)
-    .stringField('ip', data.ip)
-    .stringField('id', data.id)
-    .intField('itag', data.itag)
-    .stringField('aitags', data.aitags)
-    .tag('mh', data.mh)
-    .stringField('mm', data.mm)
-    .stringField('mn', data.mn)
-    .stringField('ms', data.ms)
-    .tag('mv', data.mv)
-    .intField('mvi', data.mvi)
-    .tag('pcm2cms', data.pcm2cms)
-    .intField('pl', data.pl)
-    .intField('initcwndbps', data.initcwndbps)
-    .intField('siu', data.siu)
-    .stringField('spc', data.spc)
-    .intField('vprv', data.vprv)
-    .intField('svpuc', data.svpuc)
-    .tag('ns', data.ns)
-    .tag('gir', data.gir)
-    .intField('clen', data.clen)
-    .floatField('dur', data.dur)
-    .intField('lmt', data.lmt)
-    .intField('mt', data.mt)
-    .intField('fvip', data.fvip)
-    .tag('keepalive', data.keepalive)
-    .intField('fexp', data.fexp)
-    .tag('c', data.c)
-    .intField('txp', data.txp)
-    .stringField('n', data.n)
-    .tag('sparams', data.sparams)
-    .stringField('sig', data.sig)
-    .stringField('lsparams', data.lsparams)
-    .stringField('lsig', data.lsig)
-    .tag('alr', data.alr)
-    .stringField('cpn', data.cpn)
-    .stringField('cver', data.cver)
-    .stringField('range', data.range)
-    .intField('rn', data.rn)
-    .intField('rbuf', data.rbuf)
-    .stringField('pot', data.pot);
 
-  writeApi.writePoint(point);
-  // writeApi.close();
+async function checkOrganizationAndBucket(orgName, bucketName) {
+  try {
+    const orgsAPI = new OrgsAPI(influxDB);
+    const organizations = await orgsAPI.getOrgs();
+
+    // Find the organization with the specified name
+    const organization = organizations.orgs.find((o) => o.name === orgName);
+    if (!organization) {
+      console.error(`Organization "${orgName}" does not exist.`);
+      return;
+    }
+
+    const orgID = organization.id;
+
+    // Get buckets in the organization
+    const bucketsAPI = new BucketsAPI(influxDB);
+    const buckets = await bucketsAPI.getBuckets({ orgID, name: bucketName });
+
+    if (buckets.buckets.length > 0) {
+      console.log(`Bucket "${bucketName}" exists in organization "${orgName}".`);
+    } else {
+      console.log(`Bucket "${bucketName}" does not exist in organization "${orgName}".`);
+    }
+  } catch (e) {
+    console.error('Error:', e);
+  }
+}
+
+const saveData = async (videoData) => {
+  try {
+    const point =  new Point('vediotable')
+      .tag('vedioTime', videoData.vedioTime)
+      .tag('vedioId', videoData.vedioId)
+      .tag('userId', videoData.userId)
+      .tag('state', videoData.state)
+      .floatField('durationInSec', videoData.durationInSec)
+      .timestamp(new Date());
+    await writeApi.writePoint(point);
+    // writeApi.close().then(() => {
+    //   console.log('WRITE FINISHED');
+    // });
+  } catch (error) {
+    console.error('Error writing data:', error);
+    return false;
+  }
 };
 
 const getData = async () => {
   try {
     const queryApi = new InfluxDB({url, token}).getQueryApi(org);
-    const fluxQuery = `
-      from(bucket: "${bucket}")
-        |> range(start: -1h)
-        |> limit(n: 2000)  // Query 1000 records
-    `;
-
     const results = [];
+    const fluxQuery = `
+    from(bucket: "${bucket}")
+      |> range(start: -3d)
+      |> filter(fn: (r) => r["_measurement"] == "vediotable")
+      |> limit(n: 1000)
+  `;
 
-    // Execute the query and log results here
     for await (const {values, tableMeta} of queryApi.iterateRows(fluxQuery)) {
       const o = tableMeta.toObject(values);
       results.push(o);
@@ -85,4 +82,5 @@ const getData = async () => {
 module.exports = {
   saveData,
   getData,
+  checkOrganizationAndBucket,
 };
