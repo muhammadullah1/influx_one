@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  </head>
+  <body>
+    <section class="text-gray-600 body-font relative">
+      <div class="container px-5 py-24 mx-auto">
+        <video
+          id="videoPlayer"
+          controls
+          disableRemotePlayback
+          playsinline
+          loop
+          src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        ></video>
+      </div>
+    </section>
+    <script>
+        let isPlaying = false;
+        const video = document.getElementById("videoPlayer");
+      
+        video.addEventListener("play", function () {
+          isPlaying = true;
+          setInterval(sendApiCall, 10000);
+        });
+      
+        video.addEventListener("pause", function () {
+          isPlaying = false;
+        });
+      
+        function sendApiCall() {
+          const payload = {
+            videoTime: Date.now().toString(),
+            videoId: "123",
+            userId: "123",
+            state: isPlaying ? "playing" : "paused",
+            durationInSec: "36000",
+          };
+      
+          $.ajax({
+            type: "POST",
+            url: "http://localhost:5000/api/data",
+            contentType: "application/json",
+            data: JSON.stringify(payload),
+            success: function () {
+              console.log("API call successful:", payload);
+            },
+            error: function (error) {
+              console.error("Error making API call:", error);
+            },
+          });
+        }
+      </script>
+  </body>
+</html>

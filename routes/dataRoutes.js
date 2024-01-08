@@ -5,6 +5,6 @@ const router = express.Router();
 
 // Define your API routes here
 router.post('/data', dataController.createData);
-router.get('/data', dataController.getData); 
+router.get('/data', dataController.fetchData); 
 
 module.exports = router;

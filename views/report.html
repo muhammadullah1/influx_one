@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <section class="text-gray-600 body-font">
+      <div class="container px-5 py-24 mx-auto">
+        <div class="flex flex-col text-center w-full mb-20">
+          <h1
+            class="sm:text-4xl text-3xl font-medium title-font mb-2 text-gray-900"
+          >
+            Demo Player Report
+          </h1>
+        </div>
+        <div class="w-full mx-auto overflow-auto">
+          <table class="table-auto w-full text-left whitespace-no-wrap">
+            <thead>
+              <tr>
+                <th
+                  class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 rounded-tl rounded-bl"
+                >
+                  UserId
+                </th>
+                <th
+                  class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100"
+                >
+                  VideoId
+                </th>
+                <th
+                  class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100"
+                >
+                  Start
+                </th>
+                <th
+                  class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100"
+                >
+                  Stop
+                </th>
+                <th
+                  class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100"
+                >
+                  Time
+                </th>
+                <th
+                  class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100"
+                >
+                  Video State
+                </th>
+                <th
+                  class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100"
+                >
+                  Duration
+                </th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- <tr>
+                <td class="px-4 py-3">Start</td>
+                <td class="px-4 py-3">5 Mb/s</td>
+                <td class="px-4 py-3">15 GB</td>
+                <td class="px-4 py-3 text-lg text-gray-900">Free</td>
+              </tr> -->
+              
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+      <script>
+        function formatDateTime(dateTime) {
+          const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+          return new Date(dateTime).toLocaleString('en-US', options);
+        }
+
+  
+        $(document).ready(function () {
+          $.getJSON("http://localhost:5000/api/data", function (data) {
+            const tableBody = $("#tableBody");
+  
+            if (data) {
+              $.each(data, function (index, entry) {
+                const newRow = $("<tr>");
+  
+                $("<td class='px-4 py-3'>").text(entry.userId).appendTo(newRow);
+                $("<td class='px-4 py-3'>").text(entry.videoId).appendTo(newRow);
+                $("<td class='px-4 py-3'>").text(formatDateTime(entry._start)).appendTo(newRow);
+                $("<td class='px-4 py-3'>").text(formatDateTime(entry._stop)).appendTo(newRow);
+                $("<td class='px-4 py-3'>").text(formatDateTime(entry._time)).appendTo(newRow);
+                $("<td class='px-4 py-3'>").text(entry.state).appendTo(newRow);
+                $("<td class='px-4 py-3'>").text(entry._value).appendTo(newRow);
+  
+                tableBody.append(newRow);
+              });
+            }
+          });
+        });
+      </script>
+  </body>
+</html>
